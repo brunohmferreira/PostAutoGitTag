@@ -1,0 +1,58 @@
+steps:
+- ${{ if and(eq(variables['Decorator.GitTagCreation.Enabled'], True), eq(variables['System.StageDisplayName'], 'PRD')) }}:
+  - task: PowerShell@2
+    displayName: 'Git: Tag Creation'
+    inputs:
+      targetType: 'inline'
+      script: |
+        echo "before cloning"
+        dir
+
+        cd "cd "C:\decorator""
+        echo "after cd cd "C:\decorator""
+        dir
+
+        mkdir -path _git
+        cd _git
+        echo "after create _git folder"
+        dir
+
+        $RepoPartialUri = "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_git/$(Build.Repository.Name)".SubString(8)
+        echo "Repositorio https://$RepoPartialUri"
+        git clone "https://$env:SYSTEM_ACCESSTOKEN@$RepoPartialUri"
+        cd $(RepositoryName)
+        echo "Cloned, Working Dir changed for '$(RepositoryName)'"
+
+
+        ############      tag name    ##############
+        $TagName = "$(Build.BuildNumber)"
+        echo "TagName: $TagName"
+
+        ############      tag message    ##############
+        $BeautyDate = Get-Date -Format "dddd dd/MMMM/yyyy HH:mm K"
+        $Description = "$(Release.Reason) Release"
+
+        echo "ReleaseDescription: $(Release.ReleaseDescription)"
+        if (-not [String]::IsNullOrWhiteSpace( "$(Release.ReleaseDescription)" ))
+        {
+            $Description = "$Description, $(Release.ReleaseDescription)"
+        }
+
+        $TagMessage = "$Description, published in production at $BeautyDate (auto generated tag)"
+        echo "TagMessage: $TagMessage"
+
+        ############      tagging    ##############
+        git config user.email "tagger-bot@example.com"
+        git config user.name "Automated Release Tagger"
+
+        git tag -a $TagName -m "$TagMessage" $(Build.SourceVersion)
+
+        if(-not $?){
+          echo "[Error] git tag failed"
+          exit 1
+        }
+
+        echo "tag done"
+        git show $TagName
+
+        git push origin $TagName

@@ -1,0 +1,35 @@
+{
+    "manifestVersion": 1,
+    "id": "gittagdecorator",
+    "name": "Git: tag creation",
+    "version": "1.40.0",
+    "publisher": "BrunoHenriqueMendesFerreira",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],    
+    "description": "Creates a auto-generated tag at commit-id",
+    "categories": [
+        "Azure Pipelines"
+    ],
+    "contributions": [
+        {
+            "id": "git-tag-task",
+            "type": "ms.azure-pipelines.pipeline-decorator",
+            "targets": [
+                "ms.azure-release-pipelines-agent-job.post-job-tasks"
+            ],
+            "properties": {
+                "template": "git-tag-decorator.yml"
+            }
+        }
+    ],
+    "files": [
+        {
+            "path": "git-tag-decorator.yml",
+            "addressable": true,
+            "contentType": "text/plain"
+        }
+    ]
+}
