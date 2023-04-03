@@ -4,7 +4,7 @@ A series of sample Decorators for Azure Pipelines (Release).
 
 Decorators in this repo work only with Azure DevOps (_they are not available in Azure DevOps Server_).
 
-Check the official documentation [here](https://docs.microsoft.com/en-us/azure/devops/extend/develop/add-pipeline-decorator) and [here](https://docs.microsoft.com/en-us/azure/devops/extend/develop/pipeline-decorator-context) for more information about Azure Pipelines decorators.
+Check the [official documentation](https://docs.microsoft.com/en-us/azure/devops/extend/develop/add-pipeline-decorator) for more information about Azure Pipelines decorators.
 
 ## Intro to Decorators
 
