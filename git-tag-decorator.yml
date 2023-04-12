@@ -1,10 +1,11 @@
 steps:
 - ${{ if and(eq(variables['Decorator.GitTagCreation.Enabled'], True), eq(variables['System.StageDisplayName'], 'PRD')) }}:
   - task: PowerShell@2
-    displayName: 'Git: Tag Creation'
+    displayName: 'Git: Tag Creation (injected from decorator)'
     inputs:
       targetType: 'inline'
       script: |
+        ############      clone repository    ##############
         echo "before cloning"
         dir
 
@@ -24,6 +25,8 @@ steps:
 
         cd $(Build.Repository.Name)
         echo "Cloned, Working Dir changed for '$(Build.Repository.Name)'"
+
+        ############      tag creation    ##############
 
         ############      tag name    ##############
         $TagName = "$(Build.BuildNumber)"
@@ -51,6 +54,14 @@ steps:
         if(-not $?){
           echo "[Error] git tag creation failed"
           echo "##vso[task.logissue type=error] Fail to create git tag: $TagName"
+          echo "before cleaning"
+          dir "$(System.DefaultWorkingDirectory)"
+
+          cd "$(System.DefaultWorkingDirectory)"
+          rm -r -force _git
+
+          echo "after cleaning"
+          dir "$(System.DefaultWorkingDirectory)"
           exit 1
         }
 
@@ -58,3 +69,14 @@ steps:
         git show $TagName
 
         git push origin $TagName
+
+        ############      Clean _git folder    ##############
+
+        echo "before cleaning"
+        dir "$(System.DefaultWorkingDirectory)"
+
+        cd "$(System.DefaultWorkingDirectory)"
+        rm -r -force _git
+
+        echo "after cleaning"
+        dir "$(System.DefaultWorkingDirectory)"
