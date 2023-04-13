@@ -66,7 +66,17 @@ steps:
           dir "$(System.DefaultWorkingDirectory)"
 
           cd "$(System.DefaultWorkingDirectory)"
-          rm -r -force _git
+          
+          if ('$(Agent.OS)' -eq 'Linux')
+          {
+            echo "Removing folder in Linux"
+            rm -rf _git
+          }
+          else
+          {
+            echo "Removing folder in Windows"
+            rm -r -force _git
+          }
 
           echo "after cleaning"
           dir "$(System.DefaultWorkingDirectory)"
@@ -89,7 +99,17 @@ steps:
         dir "$(System.DefaultWorkingDirectory)"
 
         cd "$(System.DefaultWorkingDirectory)"
-        rm -r -force _git
+        
+        if ('$(Agent.OS)' -eq 'Linux')
+        {
+          echo "Removing folder in Linux"
+          rm -rf _git
+        }
+        else
+        {
+          echo "Removing folder in Windows"
+          rm -r -force _git
+        }
 
         echo "after cleaning"
         dir "$(System.DefaultWorkingDirectory)"
