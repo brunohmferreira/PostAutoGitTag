@@ -1,18 +1,12 @@
 steps:
 - ${{ if and(eq(variables['Decorator.GitTagCreation.Enabled'], True), eq(variables['System.StageDisplayName'], 'PRD')) }}:
   - task: PowerShell@2
-    displayName: 'Git: Tag Creation (injected from decorator)'
+    displayName: 'Git: Tag Creation - step: clone repository (injected from decorator)'
     inputs:
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
       targetType: 'inline'
       script: |
-        ############      clone repository    ##############
-        echo "##[section]Starting: Clone repository"
-
         echo "before cloning"
-        dir
-
-        cd "$(System.DefaultWorkingDirectory)"
-        echo "after cd System.DefaultWorkingDirectory"
         dir
 
         mkdir _git
@@ -28,10 +22,16 @@ steps:
         cd $(Build.Repository.Name)
         echo "Cloned, Working Dir changed for '$(Build.Repository.Name)'"
 
-        echo "##[section]Finishing: Clone repository"
+  - task: PowerShell@2
+    displayName: 'Git: Tag Creation - step: tag creation (injected from decorator)'
+    inputs:
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
+        dir
 
-        ############      tag creation    ##############
-        echo "##[section]Starting: Tag creation"
+        cd _git
+        cd $(Build.Repository.Name)
 
         ############      tag name    ##############
         $TagName = "$(Build.BuildNumber)"
@@ -59,29 +59,7 @@ steps:
         if(-not $?){
           echo "##[error] Git tag creation failed"
           echo "##vso[task.logissue type=error] Fail to create git tag: $TagName"
-
-          echo "##[section]Starting: Clean folder"
-
-          echo "before cleaning"
-          dir "$(System.DefaultWorkingDirectory)"
-
-          cd "$(System.DefaultWorkingDirectory)"
-          
-          if ('$(Agent.OS)' -eq 'Linux')
-          {
-            echo "Removing folder in Linux"
-            rm -rf _git
-          }
-          else
-          {
-            echo "Removing folder in Windows"
-            rm -r -force _git
-          }
-
-          echo "after cleaning"
-          dir "$(System.DefaultWorkingDirectory)"
-
-          echo "##[section]Finishing: Clean folder"
+          echo "##vso[task.logissue type=error] Your tag can't be created because it already exists."
           exit 1
         }
 
@@ -90,15 +68,15 @@ steps:
 
         git push origin $TagName
 
-        echo "##[section]Finishing: Tag creation"
-
-        ############      Clean _git folder    ##############
-        echo "##[section]Starting: Clean folder"
-
+  - task: PowerShell@2
+    displayName: 'Git: Tag Creation - step: clean folder (injected from decorator)'
+    condition: succeededOrFailed()
+    inputs:
+      workingDirectory: '$(System.DefaultWorkingDirectory)'
+      targetType: 'inline'
+      script: |
         echo "before cleaning"
-        dir "$(System.DefaultWorkingDirectory)"
-
-        cd "$(System.DefaultWorkingDirectory)"
+        dir
         
         if ('$(Agent.OS)' -eq 'Linux')
         {
@@ -112,6 +90,4 @@ steps:
         }
 
         echo "after cleaning"
-        dir "$(System.DefaultWorkingDirectory)"
-
-        echo "##[section]Finishing: Clean folder"
+        dir
