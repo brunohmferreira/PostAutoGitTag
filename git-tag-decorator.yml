@@ -37,6 +37,13 @@ steps:
         $TagName = "$(Build.BuildNumber)"
         echo "TagName: $TagName"
 
+        ############      testing tag    ###########
+        if ($(git tag --list $TagName --contains $(Build.SourceVersion))) 
+        {
+          echo "##vso[task.logissue type=warning] $TagName tag already exists. The step has been skipped!"
+          exit 0
+        }
+
         ############      tag message    ##############
         $BeautyDate = Get-Date -Format "dddd dd/MMMM/yyyy HH:mm K"
         $Description = "$(Release.Reason) Release"
@@ -56,7 +63,8 @@ steps:
 
         git tag -a $TagName -m "$TagMessage" $(Build.SourceVersion)
 
-        if(-not $?){
+        if (-not $?)
+        {
           echo "##[error] Git tag creation failed"
           echo "##vso[task.logissue type=error] Fail to create git tag: $TagName"
           echo "##vso[task.logissue type=error] Your tag can't be created because it already exists."
@@ -67,6 +75,14 @@ steps:
         git show $TagName
 
         git push origin $TagName
+
+        if ($(git tag --list $TagName --contains $(Build.SourceVersion))) 
+        {
+          echo "$TagName tag pushed successfully"
+        }
+        else {
+          echo "##vso[task.logissue type=error] $TagName tag was not pushed, check the commit and application version."
+        }
 
   - task: PowerShell@2
     displayName: 'Git: Tag Creation - step: clean folder (injected from decorator)'
