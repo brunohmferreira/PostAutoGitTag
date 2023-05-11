@@ -40,8 +40,13 @@ steps:
         ############      testing tag    ###########
         if ($(git tag --list $TagName --contains $(Build.SourceVersion))) 
         {
-          echo "##vso[task.logissue type=warning] $TagName tag already exists. The step has been skipped!"
+          echo "##vso[task.logissue type=warning] $TagName tag already exists in the target commit of this job. The step has been skipped!"
           exit 0
+        }
+        elseif ($(git tag --list $TagName)) 
+        {
+          echo "##vso[task.logissue type=error] Something went wrong! The git tag $TagName already exists in a different commit than the target commit of this job. Please check your git tags or branch name."
+          exit 1
         }
 
         ############      tag message    ##############
@@ -80,7 +85,8 @@ steps:
         {
           echo "$TagName tag pushed successfully"
         }
-        else {
+        else 
+        {
           echo "##vso[task.logissue type=error] $TagName tag was not pushed, check the commit and application version."
         }
 
